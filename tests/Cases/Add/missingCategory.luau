@@ -1,5 +1,6 @@
 --[[
-    add to a category nobody created errors at the call
+    add to a category nobody created errors at the call, even when the
+    template and the parent it is given are both valid
 --]]
 
 --!strict

@@ -4,7 +4,7 @@ Every notable change to Cellar is recorded here. The format follows [Keep a Chan
 
 Cellar is rewritten from ObjectCache 3.5.2 (`fadeluc-123/objectcache`), so its first release lists its changes against that version.
 
-## [Unreleased]
+## [0.1.0] - 2026-11-02
 
 ### Added
 
@@ -14,7 +14,7 @@ Cellar is rewritten from ObjectCache 3.5.2 (`fadeluc-123/objectcache`), so its f
 
 ### Changed
 
-- The package is `fadeluc-123/cellar`, installed as `Cellar = "fadeluc-123/cellar@^1.0.0"` and required as `require(ReplicatedStorage.Packages.Cellar)`. `fadeluc-123/objectcache` stays installable at 3.5.2 and gets no further versions.
+- The package is `fadeluc-123/cellar`, installed as `Cellar = "fadeluc-123/cellar@^0.1.0"` and required as `require(ReplicatedStorage.Packages.Cellar)`. `fadeluc-123/objectcache` stays installable at 3.5.2 and gets no further versions.
 - Cellar is licensed under the Apache License 2.0. ObjectCache was MIT licensed.
 - A game requires Cellar bare and keeps full types, after the three typed-install commands in the README. ObjectCache 3.5.2 had to be required `: any`, since its annotations declared `get`'s `name` as required.
 - The source is strict-mode `.luau`, written for luau-lsp's new type checker.

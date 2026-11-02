@@ -1,8 +1,7 @@
 --[[
     Formats every first-party .luau file with StyLua and then restores the
     space after the function keyword of anonymous functions, which StyLua
-    removes and the house style requires. A root that does not exist on disk
-    is passed over
+    removes and the house style requires
 --]]
 
 --!strict
