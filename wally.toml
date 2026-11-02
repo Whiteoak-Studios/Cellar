@@ -1,0 +1,15 @@
+[package]
+name = "fadeluc-123/cellar"
+description = "Pools Roblox instances: declare a category, fill it with copies, take them out with get and give them back with rebound."
+version = "0.0.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+license = "Apache-2.0"
+authors = ["Michael Sumner <mike@whiteoak.studio>"]
+homepage = "https://github.com/Whiteoak-Studios/Cellar"
+repository = "https://github.com/Whiteoak-Studios/Cellar"
+
+exclude = ["**"]
+include = ["src", "src/**", "default.project.json", "wally.toml", "README.md", "LICENSE"]
+
+[dependencies]
