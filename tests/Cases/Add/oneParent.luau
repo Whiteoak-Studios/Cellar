@@ -1,8 +1,7 @@
 --[[
-    One parent per category: a category created with none takes the first
-    add's, or the workspace when that add passes none, nil means the
-    category's parent, and an add naming a different one errors at the
-    call, naming both
+    One parent per category: one created with none takes its first add's,
+    or the workspace when that add passes none, nil means the category's
+    parent, and an add naming another parent errors at the call, naming both
 --]]
 
 --!strict

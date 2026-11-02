@@ -32,12 +32,12 @@ Cellar is the Wally package `fadeluc-123/cellar`, realm `shared`, so the server 
 
 ```toml
 [dependencies]
-Cellar = "fadeluc-123/cellar@^1.0.0"
+Cellar = "fadeluc-123/cellar@^0.1.0"
 ```
 
 The name on the left is the name Wally gives the package's entry in `Packages/`, so with `Cellar` the require below reads `Packages.Cellar`. Cellar has no dependencies of its own, so this one line is all it needs.
 
-`^1.0.0` takes any 1.x release. A change to a function's name, its argument order or its return shape, or to a behavior a known consumer relies on, comes only in a new major version. New API comes in a minor version, and fixes in a patch.
+`^0.1.0` takes any 0.1.x release and never 0.2.0, since Wally follows Cargo's rules, where the first nonzero number marks a breaking change. So while Cellar is on 0.x, a change to a function's name, its argument order or its return shape, or to a behavior a known consumer relies on, comes only in a new minor version, such as 0.2.0, and a game moves to it by editing this line. New API and fixes come in a patch, such as 0.1.1, which `^0.1.0` picks up.
 
 ### Typed install
 
@@ -295,12 +295,12 @@ Under deferred signals, a copy's `Destroying` may not have run yet when `rebound
 
 ## Limits
 
-- Pooled parts must be anchored. The park point sits below `Workspace.FallenPartsDestroyHeight`, where the engine destroys an unanchored part, and Cellar does not anchor parts for you. Anchor every part in a template.
+- Pooled parts must be anchored. The park point sits below `Workspace.FallenPartsDestroyHeight`, where the engine takes an unanchored part out of the world by setting its `Parent` to nil, without destroying it. `getAll` still lists such a copy as idle until the next `get` drops it, and no `get` hands it out. Cellar does not anchor parts for you, so anchor every part in a template.
 - `rebound` resets only position and parent. Anything else a copy changed while it was out, such as its attributes, tags, properties or joints, comes back with it, so the code that changes a copy puts it back the way it found it.
 - A parked copy stays in the Workspace when its category's parent is in the Workspace, so a CollectionService tag on it still raises its Component while it sits in the pool.
 - Anything that is not a Model or a BasePart stays where it is when parked, so the code that owns a pooled Sound or AudioPlayer stops it.
-- `getAll` allocates two arrays on every call, so call it at boot or on a settings change.
-- A named `get` scans the idle list, so its cost grows with the pool. An unnamed `get` and `remove` take from the end, at the same cost for any size.
+- `getAll` allocates two arrays on every call, so call it at boot or on a settings change. In three benchmark runs in the dev place, under both signal modes, it took 80 to 107 µs on a pool of 400 copies.
+- A named `get` scans the idle list, so its cost grows with the pool. In three benchmark runs in the dev place, under both signal modes, a named `get` whose copy sat at the far end took 2 to 3 µs at 10 copies, 18 to 26 µs at 100 and 71 to 102 µs at 400. An unnamed `get` and `remove` take from the end, at the same cost for any size: an unnamed `get` and its `rebound` took about 1 µs at every size.
 - Cellar trusts its caller. It has no remote and checks nothing a client could have sent, so a game never addresses a server pool by a string a client sent. A category name a game builds from client input is the game's to validate first.
 
 ## API
@@ -329,7 +329,7 @@ Replace the dependency line:
 ObjectCache = "fadeluc-123/objectcache@3.5.2"
 
 # Cellar
-Cellar = "fadeluc-123/cellar@^1.0.0"
+Cellar = "fadeluc-123/cellar@^0.1.0"
 ```
 
 ObjectCache required the game's own Promise at `ReplicatedStorage.Packages.Promise`. Cellar needs none, so a `Promise` line kept only for ObjectCache can go.
@@ -350,7 +350,7 @@ Then check each call against what changed:
 
 ## Testing Cellar
 
-Cellar is tested two ways, and a release waits for both: the Lune suite, and a live run in a Studio place. Lune has no physics and no real engine signals, so the park point, a Model's shape and `Destroying` are proven only live, while the suite catches every other break in seconds.
+Cellar is tested two ways, and a release waits for both: the Lune suite, and a live run in a Studio place. Lune has no physics and no real engine signals, so the park point, a Model's shape and `Destroying` are proven only live, while the suite catches every other break in seconds. Timings come from the benchmarks, which run in the same Studio place.
 
 ### The Lune suite
 
@@ -361,37 +361,124 @@ lune run tests
 
 `rokit install` installs the tools `rokit.toml` pins: Rojo 7.7.0, Wally 0.3.2, StyLua 2.5.2, selene 0.31.0, wally-package-types 1.6.2, Lune 0.10.5 and luau-lsp 1.70.0. `lune run tests` runs `tests/init.luau`, which runs every case under `tests/Cases/` in path order. `tests/Environment.luau` loads `src/` fresh for each case under a fake `game`, `script`, `task` and `require`. The cases sit in one folder per function, `Create/`, `Add/`, `Get/`, `Rebound/`, `Remove/` and `GetAll/`, with `Park/` for the park point, one camelCase file per case.
 
+A run where every case passes prints one line, with the number of cases, and exits with code 0:
+
+```
+27 cases passed
+```
+
+The run stops at the first case that fails, so no case after it runs. It prints `Failed`, the case's path under `tests/Cases/` without `.luau`, and the reason, then exits with code 1. A case that returns false prints the reason it gave:
+
+```
+Failed Get/missingNameReturnsNil: a named get with no match took copies: 2 of 2 left
+```
+
+A case that throws prints `it threw:` and the error, which starts with the case file's full path on disk and the line that threw.
+
+To run only some cases, pass text after `tests`. Only the cases whose path holds that text run, and the match is case sensitive:
+
+```sh
+lune run tests Get/
+lune run tests badCount
+```
+
+`Get/` runs the ten `get` cases and leaves out `GetAll/`, and `badCount` runs the three bad-count cases for `add`, `get` and `remove`. Text that matches no path runs nothing and still prints `0 cases passed` with code 0, so check the count.
+
+### CI
+
+`.github/workflows/ci.yml` runs four gates on every pull request, every push to `main` and every release tag: Format, Lint, Analyze, and Tests, which is `lune run tests`. Each gate runs the same way by hand from the repo folder once `rokit install` has run.
+
+Format runs StyLua over every `.luau` file in `src/`, `tests/`, `dev/` and `.lune/`, puts back the space StyLua takes out after `function` in an anonymous function, and fails when that leaves any change:
+
+```sh
+lune run format
+git diff --exit-code
+```
+
+`lune run format` rewrites files in place and prints nothing. `git diff` shows only changes you have not staged, so stage your own work with `git add` first. A clean run then prints nothing and exits with code 0. A file that was out of format shows as a diff, and the exit code is 1; stage the formatted file.
+
+Lint runs selene over `src/`:
+
+```sh
+selene src
+```
+
+A clean run prints:
+
+```
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+Analyze checks `src/` under luau-lsp's new type checker. It needs two files that git ignores: a sourcemap built from `dev.project.json`, and Roblox's type definitions, downloaded from luau-lsp's repository. Make both, then analyze:
+
+```sh
+rojo sourcemap dev.project.json --output sourcemap.json
+curl -sSfL https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.luau -o globalTypes.d.luau
+luau-lsp analyze --platform=roblox --flag:LuauSolverV2=true --sourcemap=sourcemap.json --definitions=globalTypes.d.luau --ignore="Packages/**" --formatter=gnu src
+```
+
+`rojo sourcemap` prints `Created sourcemap at sourcemap.json`, and `curl` prints nothing. A clean analyze prints three log lines of luau-lsp's own and exits with code 0: `[INFO] Loading definitions file: @roblox - globalTypes.d.luau`, a `[WARN]` that the client does not allow `didChangeWatchedFiles` registration, which does not fail the gate, and `[INFO] Loading Luau configuration from` the repo's `.luaurc`. Each problem adds a line with the file, the line and column range and the error, such as `src/Broken.luau:2.23-2.27: TypeError: Expected this to be 'number', but got 'string'`, and the exit code is 1.
+
+A release tag such as `v0.1.0` publishes the release once the gates pass, and only when the tag matches the version in `wally.toml`.
+
 ### The live run
 
 The dev place is `127126854743642`. To serve Cellar into it:
 
 1. Open the dev place in Roblox Studio.
-2. In the repo folder, run `rojo serve dev.project.json`. It serves on port 34886, the `servePort` in `dev.project.json`.
+2. In the repo folder, run `rojo serve dev.project.json`. It serves on port 34886, the `servePort` in `dev.project.json`. A running serve does not pick up a mount added to the project file, so restart any serve started before `dev.project.json` last changed.
 3. Click Connect in the Rojo plugin.
 
-`dev.project.json` mounts `src/` at `ReplicatedStorage.Packages.Cellar`, where a game's install puts it. The dev place's own scripts live in `dev/`, which is never published.
+`dev.project.json` mounts `src/` at `ReplicatedStorage.Packages.Cellar`, where a game's install puts it. It mounts `dev/server` as the Script `ServerScriptService.Dev` and `tests/Benchmarks` as the folder `ServerScriptService.Benchmarks`. The dev place's own scripts live in `dev/`, which is never published.
 
-The live run checks what Lune cannot:
+Start a play. `ServerScriptService.Dev` runs six checks on the server, one after another, each in a folder of its own that it destroys afterward. Each check prints one line, `[Cellar live]`, then `PASS`, `FAIL` or `FINDING`, then the check's name, a colon and what it measured. The checks run in this order:
 
-- A pooled Model comes back within about 0.004 studs of its shape after `add`, `get` and `rebound`.
-- An anchored part stays parked, and an unanchored one is destroyed there.
-- Whether a clone of a tree holding an `AudioPlayer`, its `Wire` and an `AudioEmitter` under an `Attachment` keeps its `Wire` targets inside the cloned tree.
-- A copy destroyed in the world leaves the out record, with signals deferred and with signals immediate.
-- `workspace:BulkMoveTo` moves a copy that is out, and `rebound` parks it again.
-- `Clone()` on an unarchivable template gives nil, which is why `add` refuses one.
+- `shape`: a pooled Model of four parts keeps its shape within 0.004 studs after `add` parks it, after a move into the world, after `rebound` parks it again and after a second trip out. The line gives the largest drift.
+- `fallenParts`: an unanchored copy parked below `Workspace.FallenPartsDestroyHeight` leaves the world within 5 seconds and a later `get` skips it, while an anchored copy stays at the park point for those 5 seconds. The line says whether the unanchored copy's `Destroying` fired.
+- `wire`: clones a tree shaped like Echo's voice through Cellar, an `AudioPlayer` and the `Wire` that feeds it to an `AudioEmitter` under an `Attachment`, and reports what the clone's `Wire` points at, the clone's own player and emitter or the template's. It always reports `FINDING`.
+- `destroyed`: a copy destroyed while out leaves the out record and `rebound` refuses it, and a `get` made straight after an idle copy is destroyed takes the copy behind it instead.
+- `bulkMove`: `workspace:BulkMoveTo` moves a copy that is out, and `rebound` parks it again.
+- `unarchivable`: `Clone()` on a part whose `Archivable` is false gives nil, which is why `add` refuses such a template.
 
-Beside those, a probe in the installed layout checks that a game which installs Cellar through `wally install` and the typed install can require it bare under `--!strict` and keep full types under the new checker.
+A check that throws prints `FAIL` with `threw` and the error. After the last check comes one DONE line with the counts and the signal mode. A green run reads `[Cellar live] DONE passed 5, failed 0, findings 1, SignalBehavior` followed by the mode the script read, or by `unreadable:` and the reason when the engine refuses the read. `fallenParts` watches its parts for 5 seconds, so the DONE line prints a few seconds after the play starts.
 
-### CI
+Each run also prints one warning from Cellar that starts `Cellar:rebound`. It is expected, since `destroyed` calls `rebound` on a destroyed copy on purpose.
 
-`.github/workflows/ci.yml` runs four gates on every pull request, every push to `main` and every release tag. Format runs `lune run format` and fails on any diff it leaves, Lint runs `selene src`, Analyze runs `luau-lsp analyze` over `src` with `--flag:LuauSolverV2=true` on a sourcemap built from `dev.project.json`, and Tests runs `lune run tests`. The workflow file has each gate's exact steps.
+Run the checks twice, once with signals deferred and once with signals immediate. A script cannot set `Workspace.SignalBehavior`, so before each play select the Workspace and set `SignalBehavior` in Studio's Properties panel, `Deferred` for one run and `Immediate` for the other, then set it back afterward. Pick each mode by name, since `Default` ran signals immediately in the dev place. The `destroyed` line shows which mode a run used: `Destroying ran at once: false` under Deferred, and `true` under Immediate.
 
-A release tag such as `v1.0.0` publishes the release once the gates pass, and only when the tag matches the version in `wally.toml`. To run the format and lint gates by hand:
+Beside the six checks, a release is checked once in the layout Wally installs. Build the package with `wally package --output cellar.zip`, unpack it into a scratch game's `Packages/_Index/fadeluc-123_cellar@<version>/cellar/`, and write Wally's thunk at `Packages/Cellar.lua`: `return require(script.Parent._Index["fadeluc-123_cellar@<version>"]["cellar"])`. Map `Packages` into `ReplicatedStorage` in the scratch game's `default.project.json`, build its sourcemap, and run `wally-package-types --sourcemap sourcemap.json Packages/`. Then analyze a `--!strict` file that requires `Packages.Cellar` bare, with the analyze command above, once with `--flag:LuauSolverV2=true` and once without. On the code that ships as 0.1.0, every correct call checked clean under both type checkers, a wrong argument and a missing field were refused, and `Cellar.Copies` resolved by name only once `wally-package-types` had rewritten the thunk.
 
-```sh
-lune run format
-selene src
+### The benchmarks
+
+The four modules in `tests/Benchmarks/` time Cellar's operations at pool sizes of 10, 100 and 400 copies. Each one returns a function, so nothing runs until it is called. For each size it fills a fresh category in a folder of its own, times its operation 101 times and destroys the folder.
+
+- `getOne` times `get(nil, category)` and `rebound` as one pair on a pool of anchored parts. Its cost should stay the same at every size.
+- `getNamed` times a named `get(nil, category, name)` whose one copy of that name sits at the far end of the idle list, so the `get` scans the whole pool. Its cost grows with the pool, and the run shows by how much.
+- `addAtRuntime` times `add` of one tree shaped like Echo's voice into a pool already that size, the cost a pool pays to grow mid-game. The new copy is removed again outside the timing.
+- `getAll` times one `getAll` on a pool with half its copies out.
+
+Make a timing run with nothing else loading the machine, since any other work on it skews the timings. Throw away a run that overlapped other work and make it again.
+
+1. Serve the dev place as the live run does and start a play.
+2. Wait for the live checks' `[Cellar live] DONE` line, so they have finished.
+3. Switch the play to its server view with Studio's Client/Server toggle, and run one module from the command bar:
+
+   ```lua
+   require(game:GetService("ServerScriptService").Benchmarks.getOne)()
+   ```
+
+4. Wait for its three lines, then run `getNamed`, `addAtRuntime` and `getAll` the same way, one at a time.
+
+Each module prints one line per pool size, and the call returns the same three lines:
+
 ```
+[Cellar bench] <operation> at <size>: <median> us, the median of 101
+```
+
+The median is in microseconds. Each run names its own categories, so a module can be run again in the same play to repeat a timing.
 
 ## License
 

@@ -1,8 +1,7 @@
 --[[
-    Loads src/ fresh for each case under a fake game, script, task and
-    require. Instances reach the source and the case through proxies that add
-    what @lune/roblox lacks: Destroying, GetPivot and PivotTo, a Clone that
-    honors Archivable, and a Destroy that locks Parent and keeps reads
+    Loads src/ fresh for each case under a fake game, script, task and require,
+    with proxies that add what @lune/roblox lacks: Destroying, GetPivot,
+    PivotTo, a Clone that honors Archivable and a Destroy that locks Parent
 --]]
 
 --!strict
