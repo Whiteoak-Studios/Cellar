@@ -13,8 +13,8 @@ local COUNT: number = 2
 local NAME: string = "Marker"
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
 
 	local finished: boolean = false
 	local single: any = false

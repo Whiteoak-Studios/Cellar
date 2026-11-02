@@ -12,9 +12,9 @@ local COPY_COUNT: number = 3
 local GONE: number = 2 -- The copy unparented and the copy get took
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, COPY_COUNT, pool.folder, pool.category)
@@ -35,7 +35,7 @@ return function (): (boolean, string | nil)
 		return false, `get did not take the idle copy behind the one whose Parent is nil`
 	end
 
-	local after = cellar:getAll(pool.category)
+	local after: { idle: { any }, out: { any } } = cellar:getAll(pool.category)
 	if table.find(after.idle, unparented) or table.find(after.out, unparented) then
 		return false, `getAll still lists the idle copy whose Parent is nil`
 	end

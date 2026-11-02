@@ -13,11 +13,11 @@ local PISTOL_COUNT: number = 2
 local TAKE_ONE: number = 1
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local rifleTemplate = environment.new("Part", RIFLE, environment.workspace)
-	local pistolTemplate = environment.new("Part", PISTOL, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local rifleTemplate: any = environment.new("Part", RIFLE, environment.workspace)
+	local pistolTemplate: any = environment.new("Part", PISTOL, environment.workspace)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pistolTemplate, PISTOL_COUNT, pool.folder, pool.category)

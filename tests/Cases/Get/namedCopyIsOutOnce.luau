@@ -12,11 +12,11 @@ local PISTOL: string = "Pistol"
 local COPY_COUNT: number = 2 -- One rifle and one pistol
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local rifleTemplate = environment.new("Part", RIFLE, environment.workspace)
-	local pistolTemplate = environment.new("Part", PISTOL, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local rifleTemplate: any = environment.new("Part", RIFLE, environment.workspace)
+	local pistolTemplate: any = environment.new("Part", PISTOL, environment.workspace)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(rifleTemplate, nil, pool.folder, pool.category)

@@ -12,9 +12,9 @@ local COPY_COUNT: number = 3
 local MISSING: string = "Missing"
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, COPY_COUNT, pool.folder, pool.category)
@@ -22,7 +22,7 @@ return function (): (boolean, string | nil)
 	local copies: { any }? = cellar:get(nil, pool.category)
 	local out: any = copies and copies[1]
 
-	local first = cellar:getAll(pool.category)
+	local first: { idle: { any }, out: { any } }? = cellar:getAll(pool.category)
 	if not first then
 		return false, `getAll gave nil for a category that exists`
 	end
@@ -39,7 +39,7 @@ return function (): (boolean, string | nil)
 	table.clear(first.idle)
 	table.insert(first.out, pool.template)
 
-	local second = cellar:getAll(pool.category)
+	local second: { idle: { any }, out: { any } } = cellar:getAll(pool.category)
 	if #second.idle ~= COPY_COUNT - 1 or #second.out ~= 1 then
 		return false, `changing getAll's arrays changed the next getAll`
 	end

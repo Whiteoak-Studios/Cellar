@@ -11,9 +11,9 @@ local COPY_COUNT: number = 3
 local REMOVED: number = 2
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	-- A destroyed instance has no parent, and its Parent is locked
 	local function destroyed(copy: any): boolean

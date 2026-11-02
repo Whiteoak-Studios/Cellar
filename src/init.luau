@@ -164,7 +164,7 @@ function Cellar.get(self: Self, count: number?, category: string, name: string?)
 	local taken: { Instance } = {}
 
 	-- Walking down from the end, a removal shifts only copies already passed
-	for index = #idle, 1, -1 do
+	for index: number = #idle, 1, -1 do
 		local copy: Instance = idle[index]
 
 		-- An idle copy sits in its category's parent, so a nil Parent is a copy destroyed before its Destroying ran

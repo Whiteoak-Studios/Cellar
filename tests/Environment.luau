@@ -72,13 +72,13 @@ end
 
 local function forward(state: State, method: (...any) -> ...any): (...any) -> ...any
 	return function (...: any): ...any
-		local arguments = table.pack(...)
-		for index = 1, arguments.n do
+		local arguments: { n: number, [number]: any } = table.pack(...)
+		for index: number = 1, arguments.n do
 			arguments[index] = unwrap(state, arguments[index])
 		end
 
-		local results = table.pack(method(table.unpack(arguments, 1, arguments.n)))
-		for index = 1, results.n do
+		local results: { n: number, [number]: any } = table.pack(method(table.unpack(arguments, 1, arguments.n)))
+		for index: number = 1, results.n do
 			local result: any = results[index]
 			if type(result) == "table" then
 				for key: any, value: any in result do
@@ -221,7 +221,7 @@ local function run(state: State, path: string, module: any): any
 	local globals: { [string]: any } = table.clone(state.globals)
 	globals.script = wrap(state, module)
 
-	local chunk = luau.load(fs.readFile(path), { debugName = path, environment = globals })
+	local chunk: (...any) -> ...any = luau.load(fs.readFile(path), { debugName = path, environment = globals })
 
 	return (chunk())
 end
@@ -309,7 +309,7 @@ function Environment.load(fakes: { [string]: any }?): Loaded
 
 		warn = function (...: any)
 			local parts: { string } = {}
-			for index = 1, select("#", ...) do
+			for index: number = 1, select("#", ...) do
 				table.insert(parts, tostring((select(index, ...))))
 			end
 

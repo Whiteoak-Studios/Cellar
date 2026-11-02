@@ -11,10 +11,10 @@ local OTHER_FOLDER: string = "Elsewhere"
 local COPY_COUNT: number = 2 -- One add before the second create and one after
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local elsewhere = environment.new("Folder", OTHER_FOLDER, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local elsewhere: any = environment.new("Folder", OTHER_FOLDER, environment.workspace)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, nil, pool.folder, pool.category)

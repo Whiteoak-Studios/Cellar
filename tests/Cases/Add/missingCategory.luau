@@ -9,9 +9,9 @@ local Pool = require("../../Pool")
 local MISSING: string = "Missing"
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	local ok: boolean = pcall(function ()
 		cellar:add(pool.template, nil, pool.folder, MISSING)

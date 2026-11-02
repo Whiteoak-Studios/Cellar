@@ -10,9 +10,9 @@ local Pool = require("../../Pool")
 local COPY_COUNT: number = 2
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, COPY_COUNT, pool.folder, pool.category)
@@ -25,7 +25,7 @@ return function (): (boolean, string | nil)
 
 	out:Destroy()
 
-	local afterOut = cellar:getAll(pool.category)
+	local afterOut: { idle: { any }, out: { any } } = cellar:getAll(pool.category)
 	if table.find(afterOut.out, out) or #afterOut.out ~= 0 then
 		return false, `a copy destroyed while out stayed in the out record`
 	end
@@ -37,7 +37,7 @@ return function (): (boolean, string | nil)
 
 	idle:Destroy()
 
-	local afterIdle = cellar:getAll(pool.category)
+	local afterIdle: { idle: { any }, out: { any } } = cellar:getAll(pool.category)
 	if #afterIdle.idle ~= 0 then
 		return false, `a copy destroyed while idle stayed in the idle list`
 	end

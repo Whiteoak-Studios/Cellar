@@ -38,11 +38,11 @@ local function refuses(cellar: any, template: any, stray: any, category: string,
 end
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local stray = environment.new("Folder", STRAY_FOLDER, environment.workspace)
-	local inUse = environment.new("Folder", IN_USE_FOLDER, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local stray: any = environment.new("Folder", STRAY_FOLDER, environment.workspace)
+	local inUse: any = environment.new("Folder", IN_USE_FOLDER, environment.workspace)
 
 	-- 1) The first add's folder settles a category created with none, for later adds and for rebound
 	cellar:create(CLAIMED)

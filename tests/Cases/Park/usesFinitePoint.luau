@@ -33,12 +33,12 @@ local function parked(folder: any, park: CFrame, moment: string): (boolean, stri
 end
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
-	local model = environment.new("Model", MODEL_NAME, environment.workspace)
-	local lid = environment.new("Part", LID_NAME, model)
+	local model: any = environment.new("Model", MODEL_NAME, environment.workspace)
+	local lid: any = environment.new("Part", LID_NAME, model)
 	lid.CFrame = LID_CFRAME
 	environment.new("Part", BASE_NAME, model)
 

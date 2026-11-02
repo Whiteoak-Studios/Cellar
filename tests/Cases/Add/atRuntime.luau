@@ -10,10 +10,10 @@ local Pool = require("../../Pool")
 local LOOSE_TEMPLATE: string = "Loose"
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local template = environment.new("Part", LOOSE_TEMPLATE, nil)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local template: any = environment.new("Part", LOOSE_TEMPLATE, nil)
 
 	cellar:create(pool.category, pool.folder)
 

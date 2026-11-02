@@ -11,7 +11,7 @@ local process = require("@lune/process")
 local CASES: string = "tests/Cases"
 local CASE_FILE: string = "%.luau$"
 
-local paths: { string } = {}
+local Paths: { string } = {}
 
 --[[
     Collects every case file under a directory
@@ -24,7 +24,7 @@ local function collect(directory: string)
 		if fs.isDir(path) then
 			collect(path)
 		elseif name:match(CASE_FILE) then
-			table.insert(paths, path)
+			table.insert(Paths, path)
 		end
 	end
 end
@@ -59,12 +59,12 @@ local function run(module: string): (boolean, string | nil)
 end
 
 collect(CASES)
-table.sort(paths)
+table.sort(Paths)
 
 local only: string? = process.args[1]
 local count: number = 0
 
-for _, path: string in paths do
+for _, path: string in Paths do
 	if only and not path:find(only, 1, true) then
 		continue
 	end

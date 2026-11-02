@@ -11,10 +11,10 @@ local STRANGER: string = "Stranger"
 local COPY_COUNT: number = 2
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local stranger = environment.new("Part", STRANGER, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local stranger: any = environment.new("Part", STRANGER, environment.workspace)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, COPY_COUNT, pool.folder, pool.category)

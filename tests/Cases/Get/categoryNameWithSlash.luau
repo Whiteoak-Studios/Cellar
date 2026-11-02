@@ -12,9 +12,9 @@ local PREFIX: string = "FX/Casing"
 local COPY_COUNT: number = 2
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
 
 	if cellar:create(CATEGORY, pool.folder) ~= true then
 		return false, `create of {CATEGORY} did not return true`

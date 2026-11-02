@@ -14,7 +14,7 @@ local ROOTS: { string } = { "src", "tests", "dev", ".lune" }
 -- Vendored and generated
 local SKIPPED: { [string]: boolean } = {}
 
-local files: { string } = {}
+local Files: { string } = {}
 
 --[[
     Collects every .luau file under a directory, skipping the vendored and
@@ -32,7 +32,7 @@ local function collect(directory: string)
 		if fs.isDir(path) then
 			collect(path)
 		elseif name:match("%.luau$") then
-			table.insert(files, path)
+			table.insert(Files, path)
 		end
 	end
 end
@@ -44,14 +44,14 @@ for _, root: string in ROOTS do
 end
 
 -- Whiteoak TODO: one command line carries every path and caps out near a thousand files on Windows; batch it then
-local result = process.exec("stylua", files, { stdio = "forward" })
+local result: { ok: boolean, code: number } = process.exec("stylua", Files, { stdio = "forward" })
 
 if not result.ok then
 	process.exit(result.code)
 end
 
 -- Only an anonymous function puts a parenthesis straight after the keyword, so the restore is safe
-for _, path: string in files do
+for _, path: string in Files do
 	local source: string = fs.readFile(path)
 	local restored: string = source:gsub("%f[%w_]function%(", "function (")
 

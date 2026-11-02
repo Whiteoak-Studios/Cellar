@@ -9,6 +9,10 @@
 				"$className": "Folder",
 				"Cellar": { "$path": "src" }
 			}
+		},
+		"ServerScriptService": {
+			"Benchmarks": { "$path": "tests/Benchmarks" },
+			"Dev": { "$path": "dev/server" }
 		}
 	}
 }

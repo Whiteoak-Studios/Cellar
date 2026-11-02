@@ -13,10 +13,10 @@ local IN_USE_FOLDER: string = "InUse"
 local IN_USE_CFRAME: CFrame = roblox.CFrame.new(10, 20, 30) -- Where the copy is used while it is out
 
 return function (): (boolean, string | nil)
-	local environment = Environment.load()
-	local cellar = environment.cellar
-	local pool = Pool(environment)
-	local inUse = environment.new("Folder", IN_USE_FOLDER, environment.workspace)
+	local environment: Environment.Loaded = Environment.load()
+	local cellar: any = environment.cellar
+	local pool: Pool.Pool = Pool(environment)
+	local inUse: any = environment.new("Folder", IN_USE_FOLDER, environment.workspace)
 
 	cellar:create(pool.category, pool.folder)
 	cellar:add(pool.template, nil, pool.folder, pool.category)
